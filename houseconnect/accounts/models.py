@@ -34,7 +34,7 @@ class CustomUserManager(BaseUserManager):
 class CustomUser(AbstractUser, PermissionsMixin):
     objects = CustomUserManager()
 
-    email = models.CharField(max_length=50, unique=True, null=False)
+    email = models.EmailField(max_length=50, unique=True, null=False)
     username = models.CharField(max_length=40, null=True, blank=True)
     date_joined = models.DateTimeField(auto_now_add=True)
     is_admin = models.BooleanField(default=False)
@@ -55,7 +55,7 @@ class CustomUser(AbstractUser, PermissionsMixin):
 
     @property
     def is_superuser(self):
-        # Returns what the user is
+        # Returns a super user 
         return self.is_admin
 
 class Profile(models.Model):

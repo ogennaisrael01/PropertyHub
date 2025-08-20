@@ -65,9 +65,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
         model = Profile
         fields = ["username", "phone_number", "address", "profile_picture"]
 
-    def create(self, validated_data):
-        user = self.context["request"].user
-        return Profile.objects.create(user=user, **validated_data)
 
 class UserOutputSerilializer(serializers.ModelSerializer):
     profile = serializers.SerializerMethodField()

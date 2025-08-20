@@ -5,7 +5,7 @@ from accounts.serializers import RegistrationSerializer, UserOutputSerilializer,
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
 from accounts.models import Profile
-from accounts.permissions import IsOwnerOrReadOnly
+from accounts.permissions import IsOwner
 from rest_framework.exceptions import PermissionDenied
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
@@ -56,7 +56,7 @@ class ProfileAPIView(generics.ListCreateAPIView):
         serailizer = self.get_serializer(data=request.data)
 
         # validate serializer
-        if serializer.is_valid(raise_exception=True):
+        if serailizer.is_valid(raise_exception=True):
             serailizer.save(user=self.request.user)
             return Response({"Detail": "Profile created successful"}, status=201)
         return Response({"Detail": "Profile Error"}, status=400)
@@ -64,8 +64,17 @@ class ProfileAPIView(generics.ListCreateAPIView):
 class ProfileRetrieveApiView(generics.RetrieveAPIView):
     serializer_class = UserProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
-    queryset = Profile.objects.all()
+    
 
+    def get_queryset(self):
+        """ User can only retrieve their own profile but admins can retrieve all user profile """
+
+        user = self.request.user
+        if user.is_staff:
+            return Profile.objects.all()
+        else:
+            return Profile.objects.get(user=user)
+        
 class ProfileUpdateApiView(generics.UpdateAPIView):
     serializer_class = UserProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -77,7 +86,7 @@ class ProfileUpdateApiView(generics.UpdateAPIView):
         """ Users can only edit their post"""
 
         profile = Profile.objects.get(pk= self.kwargs["pk"])
-        if profile.user == self.request.user:
+        if profile.user != self.request.user:
             raise PermissionDenied({"Detail": "Dont have access to edit other users post"})
         
         return profile
@@ -91,7 +100,7 @@ class ProfileDeleteApiView(generics.DestroyAPIView):
         """ Users can only edit their post"""
 
         profile = Profile.objects.get(pk= self.kwargs["pk"])
-        if profile.user == self.request.user:
+        if profile.user != self.request.user:
             raise PermissionDenied({"Detail": "Dont have access to delete other users post"})
         
         return profile

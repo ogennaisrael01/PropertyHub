@@ -63,7 +63,7 @@ class Profile(models.Model):
         CustomUser, 
         on_delete=models.CASCADE,
         related_name="user_profile")
-    phone_number = models.IntegerField()
+    phone_number = models.CharField(max_length=15)
     address = models.CharField(max_length=250, blank=True)
     profile_picture = models.ImageField(upload_to="user_profile", null=True, blank=True)
 
@@ -85,7 +85,7 @@ class Profile(models.Model):
     
     def get_absolute_url(self):
         """
-        - Returns the URL for the user profile.
+        - Returns a URL for the user profile.
         """
         return reverse("user_profile", kwargs={"pk": self.pk})
     

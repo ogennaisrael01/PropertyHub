@@ -9,7 +9,7 @@ from accounts.views import (
 
     
 )
-
+app = "accounts"
 urlpatterns = [
     path("register/", RegistrationView.as_view(), name="register"),
     path("users/", UserListApiView.as_view(), name="users"),

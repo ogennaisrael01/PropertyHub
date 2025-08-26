@@ -2,11 +2,12 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 
+
 User = get_user_model()
 
 class House(models.Model):
     owner = models.ForeignKey(
-        User, 
+        User,
         on_delete=models.CASCADE, 
         related_name="house_owner"
         )
@@ -85,7 +86,9 @@ class Rental(models.Model):
     unit = models.ForeignKey(
         Unit,
         on_delete=models.CASCADE,
-        related_name="rentals"
+        related_name="rentals",
+        null=True
+        
     )
     house = models.ForeignKey(
         House,
@@ -97,13 +100,11 @@ class Rental(models.Model):
     end_date = models.DateField()
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     is_active = models.BooleanField(default=False)
+    date_created = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        if self.unit:
-            return f"{self.tenant.username} - {self.unit.unit_number}"
-        if self.house:
-            return f"{self.tenant.username} - {self.house.title}"
-        return None
-    
-    def get_absolut_url(self):
+    # def __str__(self):
+    #     return f"{self.unit.unit_number} in {self.house.title} rented by {self.tenant.username}"
+
+
+    def get_absolute_url(self):
         return reverse("rental_detail", args=str([self.id]))

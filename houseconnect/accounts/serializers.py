@@ -41,7 +41,7 @@ class RegistrationSerializer(serializers.Serializer):
     
     def create(self, validated_data):
         """ Create a new user with validated data"""
-        user = User.objects.create(
+        user = User.objects.create_user(
             email= validated_data["email"],
             username= validated_data["username"],
             password= validated_data["password"],
@@ -61,20 +61,14 @@ class RegistrationSerializer(serializers.Serializer):
 
 class UserProfileSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source="user.username", read_only=True)
+    role = serializers.ReadOnlyField(source="user.role")
     class Meta:
         model = Profile
-        fields = ["username", "phone_number", "address", "profile_picture"]
+        fields = ["id", "username", "phone_number", "address", "profile_picture", "role"]
 
 
 class UserOutputSerilializer(serializers.ModelSerializer):
-    profile = serializers.SerializerMethodField()
     class Meta:
         model = User
-        fields = ["email", "username", "role", "profile"]
-
-    def get_profile(self, obj):
-        """ Reverse lookup to get the profile url"""
-        if hasattr(obj, "user_profile"):
-            return obj.user_profile.get_absolute_url()
-        return None
+        fields = ["id", "email", "username", "role"]
         

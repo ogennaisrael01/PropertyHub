@@ -23,9 +23,8 @@ class CustomUserManager(BaseUserManager):
     def create_superuser(self, email, password, **kwargs):
         """ Create and return a super user with email and password """
 
-        user = self.create_user(email=email, password=password, **kwargs)
+        user = self.create(email=email, password=password, **kwargs)
         user.is_admin = True
-        user.is_superuser = True
         user.is_staff = True
         user.save(using=self.db)
 
@@ -41,7 +40,7 @@ class CustomUser(AbstractUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ["username"]
+    
 
 
     role = models.CharField(
@@ -50,6 +49,8 @@ class CustomUser(AbstractUser, PermissionsMixin):
         null=False,
         help_text="Tenant or Owner"
         )
+    
+    REQUIRED_FIELDS = ["username", "role"]
     def __str__(self):
         return self.get_username()
 
@@ -81,11 +82,11 @@ class Profile(models.Model):
         - String representation of the user object.
         - Returns the username of that object.
         """
-        return self.user.username
+        return self.user.email
     
     def get_absolute_url(self):
         """
         - Returns a URL for the user profile.
         """
-        return reverse("user_profile", kwargs={"pk": self.pk})
+        return reverse("profile", kwargs={"pk": self.pk})
     

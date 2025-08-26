@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+
 
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
@@ -36,10 +36,9 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
-    path("api/", include("house_management.urls")),
-    path("api/", include("accounts.urls")),
+    path("", include("house_management.urls")),
+    path("", include("accounts.urls")),
+    path("", include("utils.urls")),
     path('admin/', admin.site.urls),
-    path("token/obtain/", TokenObtainPairView.as_view(), name="token_obtain"),
-    path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui')
 ]

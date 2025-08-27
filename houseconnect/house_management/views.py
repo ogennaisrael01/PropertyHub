@@ -13,6 +13,7 @@ from django.contrib.auth import get_user_model
 from rest_framework import viewsets, mixins
 from rest_framework.decorators import action
 from django.shortcuts import get_object_or_404
+from notifications.models import Notification
 
 
 # API view for House management
@@ -35,7 +36,11 @@ class HouseManagementViewset(viewsets.ModelViewSet):
         """ Allow only users with Owner role to create a property"""
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            serializer.save(owner=self.request.user)
+            serializer.save(owner=request.user)
+            Notification.objects.create(
+                reciever=request.user,
+                content="You uploaded a house"
+            )
             return Response({"Detail": serializer.data}, status=status.HTTP_201_CREATED)
         else:
             return Response({"Detail": "Data not valid"}, status=status.HTTP_400_BAD_REQUEST)
@@ -53,7 +58,7 @@ class HouseManagementViewset(viewsets.ModelViewSet):
         if house:
             serializer = self.get_serializer(house, data=request.data)
             if serializer.is_valid(raise_exception=True):
-                serializer.save(owner=self.request.user)
+                serializer.save(owner=request.user)
                 return Response(serializer.data)
         return house.objects.none()
     

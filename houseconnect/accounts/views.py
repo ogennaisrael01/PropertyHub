@@ -12,6 +12,8 @@ from rest_framework import filters
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from notifications.models import Notification
+
 
 User = get_user_model()
     
@@ -27,6 +29,7 @@ class RegistrationView(generics.CreateAPIView):
         
         if serializer.is_valid(raise_exception=True):
             serializer.save()
+            message = "Account registration successful"
             return Response({"Detail": "User Registration Successful"})
         else:
             return Response({"Detail": "Credentials not valid"})
@@ -51,6 +54,11 @@ class ProfileView(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save(user=request.user)
+            message = "Profile Created"
+            Notification.objects.create(
+                reciever=request.user,
+                content=message
+            )
             return Response(serializer.data)
         else:
             return None

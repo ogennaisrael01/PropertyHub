@@ -5,7 +5,7 @@ from django.urls import reverse
 
 class CustomUserManager(BaseUserManager):
     """ Custom user manager for  creating CustomUser model  """
-    def create(self, email, password, **kwargs):
+    def create_user(self, email, password, **kwargs):
         """ create and returns a user with email and password """
 
         if not email:
@@ -16,17 +16,17 @@ class CustomUserManager(BaseUserManager):
         email = self.normalize_email(email)
         user = self.model(email=email, password=password, **kwargs)
         user.set_password(password)
-        user.save(using=self.db)
+        user.save(using=self._db)
 
         return user
     
     def create_superuser(self, email, password, **kwargs):
         """ Create and return a super user with email and password """
 
-        user = self.create(email=email, password=password, **kwargs)
+        user = self.create_user(email=email, password=password, **kwargs)
         user.is_admin = True
         user.is_staff = True
-        user.save(using=self.db)
+        user.save(using=self._db)
 
         return user
     

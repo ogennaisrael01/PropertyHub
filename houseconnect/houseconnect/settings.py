@@ -49,8 +49,8 @@ INSTALLED_APPS = [
     'drf_yasg',
     'django_filters',
     'rest_framework_simplejwt.token_blacklist',
-    'utils.apps.UtilsConfig'
-
+    'notifications.apps.NotificationsConfig',
+    'messaging.apps.MessagingConfig',
 ]
 
 MIDDLEWARE = [

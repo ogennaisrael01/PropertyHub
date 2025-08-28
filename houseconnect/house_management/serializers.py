@@ -17,7 +17,7 @@ class ImageSerializer(serializers.ModelSerializer):
     house = serializers.ReadOnlyField(source="house.title")
     class Meta:
         model = HouseImage
-        fields = ["house", "image", "uploaded_at", "caption"]    
+        fields = ["id", "house", "image", "uploaded_at", "caption"]    
 
 class HouseSerializer(serializers.ModelSerializer):
     owner = UserOutputSerilializer(read_only=True)

@@ -47,10 +47,7 @@ class HouseManagementViewset(viewsets.ModelViewSet):
     
     def get_queryset(self):
         """ A queryset to list all houese that are available """
-        queryset = House.objects.all()
-        if not queryset.exists():
-            return Response({"Detail": "No House Listed"})
-        return queryset.filter(is_available=True).order_by("-created_at")
+        return House.objects.filter(is_available=True).order_by("-created_at")
         
 
     def update(self, request, *args, **kwargs):

@@ -29,7 +29,6 @@ class RegistrationView(generics.CreateAPIView):
         
         if serializer.is_valid(raise_exception=True):
             serializer.save()
-            message = "Account registration successful"
             return Response({"Detail": "User Registration Successful"})
         else:
             return Response({"Detail": "Credentials not valid"})
@@ -37,20 +36,25 @@ class RegistrationView(generics.CreateAPIView):
 class ProfileView(viewsets.ModelViewSet):
     serializer_class = UserProfileSerializer
     queryset = Profile.objects.all()
+
     def get_permissions(self):
-        if self.action in ["create", "destroy", "update", "partial_update"]:
+        if self.action == "create":
+            permission_classes = [permissions.IsAuthenticated]
+        elif self.action in ["destroy", "update", "partial_update"]:
             permission_classes = [permissions.IsAuthenticated, IsOwner]
         elif self.action == "get_profile":
-            permission_classes = [permissions.IsAuthenticated]
+            permission_classes = [permissions.AllowAny]
         elif self.action == "retrieve":
             permission_classes = [permissions.IsAdminUser]
         else:
             permission_classes = [permissions.IsAuthenticated]
-        
+
         return [perm() for perm in permission_classes]
 
     def create(self, request, *args, **kwargs):
         """ Create a user profile """
+        if Profile.objects.filter(user=request.user).exists():
+            return Response({"Message": "Already have a profile."})
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save(user=request.user)
@@ -92,6 +96,7 @@ class ProfileView(viewsets.ModelViewSet):
 
     @action(methods=["get"], detail=False, url_path="me")
     def get_profile(self, request):
+        print(request.user, request.user.is_authenticated)
         user = request.user
         try:
             profile = Profile.objects.get(user=user)

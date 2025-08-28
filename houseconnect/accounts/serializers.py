@@ -60,11 +60,11 @@ class RegistrationSerializer(serializers.Serializer):
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(source="user.username", read_only=True)
+    user = serializers.PrimaryKeyRelatedField(read_only=True)
     role = serializers.ReadOnlyField(source="user.role")
     class Meta:
         model = Profile
-        fields = ["id", "username", "phone_number", "address", "profile_picture", "role"]
+        fields = ["id", "user", "phone_number", "address", "profile_picture", "role"]
 
 
 class UserOutputSerilializer(serializers.ModelSerializer):

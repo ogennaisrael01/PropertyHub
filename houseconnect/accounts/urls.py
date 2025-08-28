@@ -12,7 +12,7 @@ app = "accounts"
 urlpatterns = [
     path("accounts/", include(router.urls)),
     path("accounts/register/", RegistrationView.as_view(), name="register"),
-    path("auth/", include("rest_framework.urls")),
+    # path("auth/", include("rest_framework.urls")),
     path("accounts/login/", TokenObtainPairView.as_view(), name="token_obtain"),
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("accounts/logout/", TokenBlacklistView.as_view(), name="token_blacklist"),

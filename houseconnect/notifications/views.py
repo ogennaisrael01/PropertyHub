@@ -34,4 +34,4 @@ class NotificationView(viewsets.GenericViewSet):
                 return Response({"Message": "Already marked as read"})
         except Notification.DoesNotExist:
             return Response({"Message": "Not found"})
-        return Response({"Message": "mrked as read"})
+        return Response({"Message": "marked as read"})

@@ -14,6 +14,8 @@ from rest_framework import viewsets, mixins
 from rest_framework.decorators import action
 from django.shortcuts import get_object_or_404
 from notifications.models import Notification
+from django.core.mail import send_mail
+from django.conf import settings
 
 
 # API view for House management
@@ -36,11 +38,16 @@ class HouseManagementViewset(viewsets.ModelViewSet):
         """ Allow only users with Owner role to create a property"""
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            serializer.save(owner=request.user)
             Notification.objects.create(
                 reciever=request.user,
                 content="You uploaded a house"
             )
+            send_mail(subject="House uploads",
+                    from_email= settings.DEFAULT_FROM_EMAIL,
+                    message=f"Hello {request.user.username}, We are reaching out to inform that your house uploads was successfull and you will be notified when tenants starts to request for your property",
+                    recipient_list=[request.user.email],
+                    fail_silently=False)
+            serializer.save(owner=request.user)
             return Response({"Detail": serializer.data}, status=status.HTTP_201_CREATED)
         else:
             return Response({"Detail": "Data not valid"}, status=status.HTTP_400_BAD_REQUEST)
@@ -141,6 +148,11 @@ class RentHouseManagementView(mixins.CreateModelMixin, viewsets.GenericViewSet):
         serializer = self.get_serializer(data=request.data)
     
         if  self.get_house_object() and serializer.is_valid(raise_exception=True):
+            # notify the house owner that a rental has been intiated
+            Notification.objects.create(
+                receiver=self.get_house_object().owner,
+                content=f"{request.user} has requested for {self.get_house_object().house_type} in {self.get_house_object().location} "
+            ) 
             serializer.save(tenant=self.request.user, house=self.get_house_object())
             return Response({"Rented": True, "data": serializer.data}, status=status.HTTP_201_CREATED)
         else:
@@ -162,6 +174,12 @@ class RentUnitManagementView(mixins.CreateModelMixin, viewsets.GenericViewSet):
         serializer = self.get_serializer(data=request.data)
         
         if  self.get_unit_object() and serializer.is_valid(raise_exception=True):
+            
+            # notify the house owner that a rental has been intiated
+            Notification.objects.create(
+                receiver=self.get_house_object().owner,
+                content=f"{request.user} has requested for unit in {self.get_house_object().location}: Unit number {self.get_unit_object().unit_number}"
+            ) 
             serializer.save(tenant=self.request.user, house=self.get_house_object(), unit=self.get_unit_object())
             return Response({"Detail": True, "Data": serializer.data}, status=status.HTTP_201_CREATED)
         else:

@@ -29,7 +29,7 @@ class RegistrationView(generics.CreateAPIView):
         
         if serializer.is_valid(raise_exception=True):
             serializer.save()
-            return Response({"Detail": "User Registration Successful"})
+            return Response({"Message": "Registration Successful"})
         else:
             return Response({"Detail": "Credentials not valid"})
     

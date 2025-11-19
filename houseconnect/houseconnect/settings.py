@@ -14,7 +14,6 @@ from pathlib import Path
 from dotenv import load_dotenv
 import os
 from datetime import timedelta
-import dj_database_url
 load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -90,11 +89,16 @@ WSGI_APPLICATION = 'houseconnect.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES ={
-    'default': dj_database_url.config(
-        default=f'postgresql://{os.getenv("USER")}:{os.getenv("PASSWORD")}@{os.getenv('HOST')}:{os.getenv("PORT")}/{os.getenv("NAME")}',
-        conn_max_age=600
-    )
+
+DATABASES = {
+    'default': {
+        'ENGINE': "django.db.backends.postgresql",
+        'NAME': os.getenv("NAME"),
+        "USER": os.getenv("USER"),
+        "PORT": os.getenv("PORT"),
+        "HOST": os.getenv("HOST"),
+        "PASSWORD": os.getenv("PASSWORD")
+    }
 }
 
 # Password validation

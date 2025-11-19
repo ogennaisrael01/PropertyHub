@@ -1,23 +1,22 @@
-from django.shortcuts import render
-from rest_framework import  generics
-from rest_framework import permissions
-from accounts.serializers import RegistrationSerializer, UserOutputSerilializer, UserProfileSerializer
-from rest_framework.response import Response
+
+from rest_framework import  generics, permissions, viewsets, status
+from accounts.serializers import (
+    RegistrationSerializer, 
+    UserProfileSerializer, 
+    CustomTokenObtainPairSerializer,
+    AvaterSerializer,
+)
 from django.contrib.auth import get_user_model
-from accounts.models import Profile
+from accounts.models import Profile, Avater
 from accounts.permissions import IsOwner
-from rest_framework import viewsets
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters
-from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from notifications.models import Notification
+from django.shortcuts import get_object_or_404
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 
 User = get_user_model()
-    
-
 class RegistrationView(generics.CreateAPIView):
     """ Handle user registration """
 
@@ -26,82 +25,66 @@ class RegistrationView(generics.CreateAPIView):
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
-        
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
-            return Response({"Message": "Registration Successful"})
-        else:
-            return Response({"Detail": "Credentials not valid"})
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        serializer.validated_data.pop("password")
+        return Response(status=status.HTTP_201_CREATED, data={"success": True, "data": serializer.validated_data})
+
     
 class ProfileView(viewsets.ModelViewSet):
     serializer_class = UserProfileSerializer
-    queryset = Profile.objects.all()
+    queryset = Profile.objects.select_related("user")
+    permission_classes = [permissions.IsAuthenticated, IsOwner]
 
     def get_permissions(self):
-        if self.action == "create":
-            permission_classes = [permissions.IsAuthenticated]
-        elif self.action in ["destroy", "update", "partial_update"]:
+        if  self.action in ["update", "partial_update", "destroy"]:
             permission_classes = [permissions.IsAuthenticated, IsOwner]
-        elif self.action == "get_profile":
-            permission_classes = [permissions.AllowAny]
-        elif self.action == "retrieve":
+        elif self.action in ["list"]:
             permission_classes = [permissions.IsAdminUser]
         else:
             permission_classes = [permissions.IsAuthenticated]
 
         return [perm() for perm in permission_classes]
+    
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
     def create(self, request, *args, **kwargs):
         """ Create a user profile """
         if Profile.objects.filter(user=request.user).exists():
             return Response({"Message": "Already have a profile."})
         serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            serializer.save(user=request.user)
-            message = "Profile Created"
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        message = "Profile  objects created successfully"
+        try:
             Notification.objects.create(
                 reciever=request.user,
                 content=message
-            )
-            return Response(serializer.data)
-        else:
-            return None
+                )
+        except Exception as e:
+            return Response(status=status.HTTP_400_BAD_REQUEST, data={"success": False, "mgs": f"Error occured: {e}"})
+        return Response(serializer.validated_data)
+       
         
-    def update(self, request, *args, **kwargs):
-        """" Update a user profile """
-        profile = self.get_object()
-        serializer = self.get_serializer(profile, data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            serializer.save(user=request.user)
-            return Response(serializer.data)
-        else:
-            return None
-    
-    def partial_update(self, request, *args, **kwargs):
-        profile = self.get_object()
-        serializer = self.get_serializer(profile, data=request.data, partial=True)
-        if serializer.is_valid(raise_exception=True):
-            serializer.save(user=request.user)
-            return Response(serializer.data)
-        else:
-            return None
-    
-    def destroy(self, request, *args, **kwargs):
-        profile = self.get_object()
-        if profile:
-            profile.delete()
-            return Response({"Detail": "Profile deleted"})
-        else:
-            return Response({"Detail": "Can't delete prpofile"})
-
-    @action(methods=["get"], detail=False, url_path="me")
-    def get_profile(self, request):
-        print(request.user, request.user.is_authenticated)
+    @action(methods=["get"], detail=False, url_path="Me")
+    def get_loggedin_user_profile(self, request, *args, **kwargs):
         user = request.user
-        try:
-            profile = Profile.objects.get(user=user)
-        except Profile.DoesNotExist:
-            return Response({"Message": "No Profile Created"})
+        profile = get_object_or_404(Profile, user=user)
         serializer = self.get_serializer(profile)
-        return Response(serializer.data)
+        return Response(status=status.HTTP_200_OK, data={"success": True, "data": serializer.data})
+
+class CustomTokenObtainPaiView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
+    
+
+class AvaterViewset(viewsets.ModelViewSet):
+    queryset = Avater.objects.all()
+    serializer_class = AvaterSerializer
+    permission_classes  = [permissions.IsAuthenticated, IsOwner]
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    
     

@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'notifications.apps.NotificationsConfig',
     'messaging.apps.MessagingConfig',
+    "phonenumber_field",
 ]
 
 MIDDLEWARE = [
@@ -153,6 +154,8 @@ DEFAULT_FROM_EMAIL = "ogennaisrael@gmail.com"
 
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME":timedelta(minutes=15),
-    "REFRESH_TOKEN_LIFETIME":timedelta(days=7)
+    "ACCESS_TOKEN_LIFETIME":timedelta(days=1),
+    "REFRESH_TOKEN_LIFETIME":timedelta(days=7),
+    "USER_ID_FIELD": "user_id",
+    'USER_ID_CLIAM': "user_id"
 }

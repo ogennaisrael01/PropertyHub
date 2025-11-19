@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from house_management.models import House, Unit, Rental, HouseImage
 from django.utils import timezone
-from accounts.serializers import UserOutputSerilializer
+from accounts.serializers import UserOutSerilializer
 
 
 
@@ -20,7 +20,7 @@ class ImageSerializer(serializers.ModelSerializer):
         fields = ["id", "house", "image", "uploaded_at", "caption"]    
 
 class HouseSerializer(serializers.ModelSerializer):
-    owner = UserOutputSerilializer(read_only=True)
+    owner = UserOutSerilializer(read_only=True)
     date_uploaded = serializers.SerializerMethodField()
     units = UnitSerializer(many=True, read_only=True)
     image = ImageSerializer(source="house_image", read_only=True, many=True)
